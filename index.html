@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ελληνική Ιθαγένεια - Σύστημα Καθοδήγησης</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400;7..72,500;7..72,600;7..72,700&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <div class="logo-icon">🏛️</div>
+                    <div class="logo-text">
+                        <h1>Ελληνική Ιθαγένεια</h1>
+                        <span>Σύστημα Καθοδήγησης Αιτήσεων</span>
+                    </div>
+                </div>
+                <nav class="main-nav">
+                    <button class="nav-btn" data-view="new-case">
+                        <span class="nav-icon">📝</span>
+                        Νέα Υπόθεση
+                    </button>
+                    <button class="nav-btn active" data-view="cases">
+                        <span class="nav-icon">📁</span>
+                        Υποθέσεις
+                    </button>
+                    <button class="nav-btn" data-view="info">
+                        <span class="nav-icon">📖</span>
+                        Πληροφορίες
+                    </button>
+                </nav>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- New Case View -->
+            <section id="new-case-view" class="view">
+                <div class="wizard-container">
+                    <div class="wizard-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progress-fill"></div>
+                        </div>
+                        <div class="progress-steps" id="progress-steps"></div>
+                    </div>
+                    
+                    <div class="wizard-content" id="wizard-content">
+                        <!-- Dynamic content will be inserted here -->
+                    </div>
+                    
+                    <div class="wizard-actions">
+                        <button class="btn btn-secondary" id="btn-prev" disabled>
+                            ← Προηγούμενο
+                        </button>
+                        <button class="btn btn-primary" id="btn-next">
+                            Επόμενο →
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Cases View -->
+            <section id="cases-view" class="view active">
+                <div class="cases-header">
+                    <h2>Αποθηκευμένες Υποθέσεις</h2>
+                    <div class="cases-header-actions">
+                        <div class="search-box">
+                            <input type="text" id="search-cases" placeholder="Αναζήτηση με όνομα...">
+                            <span class="search-icon">🔍</span>
+                        </div>
+                        <div class="data-actions">
+                            <button class="btn btn-secondary btn-sm" onclick="exportData()" title="Εξαγωγή δεδομένων σε αρχείο">
+                                📤 Εξαγωγή
+                            </button>
+                            <button class="btn btn-secondary btn-sm" onclick="document.getElementById('import-file').click()" title="Εισαγωγή δεδομένων από αρχείο">
+                                📥 Εισαγωγή
+                            </button>
+                            <input type="file" id="import-file" accept=".json" style="display: none;" onchange="importData(event)">
+                        </div>
+                    </div>
+                </div>
+                <div class="cases-list" id="cases-list">
+                    <!-- Cases will be dynamically loaded here -->
+                </div>
+            </section>
+
+            <!-- Info View -->
+            <section id="info-view" class="view">
+                <div class="info-container">
+                    <!-- Tab Navigation -->
+                    <div class="info-tabs">
+                        <button class="info-tab active" data-tab="categories">📋 Κατηγορίες</button>
+                        <button class="info-tab" data-tab="law-texts">📜 Κείμενα Νόμων</button>
+                        <button class="info-tab" data-tab="fees">💰 Παράβολα & Κόστη</button>
+                    </div>
+                    
+                    <!-- Categories Tab -->
+                    <div id="tab-categories" class="info-tab-content active">
+                        <h2>Κατηγορίες Κτήσης Ελληνικής Ιθαγένειας</h2>
+                        <p class="info-subtitle">Βάσει του Ν. 3284/2004 (Κώδικας Ελληνικής Ιθαγένειας)</p>
+                        
+                        <div class="info-cards">
+                            <div class="info-card">
+                                <div class="card-header">
+                                    <span class="card-icon">👶</span>
+                                    <h3>Αυτοδίκαια με τη Γέννηση</h3>
+                                </div>
+                                <div class="card-content">
+                                    <p><strong>Άρθρο 1:</strong></p>
+                                    <ul>
+                                        <li>Τέκνο Έλληνα ή Ελληνίδας γονέα</li>
+                                        <li>Γέννηση σε ελληνικό έδαφος με ειδικές προϋποθέσεις</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="info-card">
+                                <div class="card-header">
+                                    <span class="card-icon">🎓</span>
+                                    <h3>Με Δήλωση-Αίτηση (Γέννηση/Φοίτηση)</h3>
+                                </div>
+                                <div class="card-content">
+                                    <p><strong>Άρθρο 1Α:</strong></p>
+                                    <ul>
+                                        <li>Τέκνο αλλοδαπών γεννημένο στην Ελλάδα + φοίτηση</li>
+                                        <li>Τέκνο αλλοδαπών με 6ετή φοίτηση σε ελληνικό σχολείο</li>
+                                        <li>Απόφοιτος ελληνικού ΑΕΙ/ΤΕΙ</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="info-card">
+                                <div class="card-header">
+                                    <span class="card-icon">📜</span>
+                                    <h3>Με Πολιτογράφηση</h3>
+                                </div>
+                                <div class="card-content">
+                                    <p><strong>Άρθρα 5-9:</strong></p>
+                                    <ul>
+                                        <li>Αλλοδαποί με 7ετή νόμιμη διαμονή</li>
+                                        <li>Ομογενείς (μειωμένες προϋποθέσεις)</li>
+                                        <li>Σύζυγοι Ελλήνων πολιτών</li>
+                                        <li>Αναγνωρισμένοι πρόσφυγες/ανιθαγενείς</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="info-card">
+                                <div class="card-header">
+                                    <span class="card-icon">👨‍👩‍👧</span>
+                                    <h3>Ειδικές Κατηγορίες</h3>
+                                </div>
+                                <div class="card-content">
+                                    <p><strong>Άρθρα 2-4:</strong></p>
+                                    <ul>
+                                        <li>Αναγνώριση τέκνου από Έλληνα</li>
+                                        <li>Υιοθεσία από Έλληνα πολίτη</li>
+                                        <li>Επανάκτηση ιθαγένειας</li>
+                                        <li>Τιμητική πολιτογράφηση</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Law Texts Tab -->
+                    <div id="tab-law-texts" class="info-tab-content">
+                        <h2>📜 Κώδικας Ελληνικής Ιθαγένειας</h2>
+                        <p class="info-subtitle">Ν. 3284/2004 (ΦΕΚ Α΄ 217/10.11.2004) - Κωδικοποίηση μέχρι 12/2/2025</p>
+                        
+                        <!-- Search Box -->
+                        <div class="law-search-container">
+                            <input type="text" id="law-search-input" class="form-input" placeholder="🔍 Αναζήτηση στα κείμενα νόμων..." style="max-width: 500px;">
+                            <p class="search-hint" style="font-size: 0.8rem; color: var(--text-light); margin-top: 0.5rem;">
+                                Αναζητήστε λέξεις-κλειδιά όπως: γέννηση, πολιτογράφηση, ομογενείς, δήλωση, κλπ.
+                            </p>
+                        </div>
+                        
+                        <!-- Law Articles List -->
+                        <div id="law-articles-list" class="law-articles-list">
+                            <!-- Will be populated by JavaScript -->
+                        </div>
+                    </div>
+                    
+                    <!-- Fees Tab -->
+                    <div id="tab-fees" class="info-tab-content">
+                        <h2>💰 Παράβολα & Εκτιμώμενο Κόστος</h2>
+                        <p class="info-subtitle">Πηγή: mitos.gov.gr (ενημέρωση 2024-2025)</p>
+                        
+                        <div id="fees-list" class="fees-list">
+                            <!-- Will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Modal for Case Details -->
+        <div class="modal" id="case-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="modal-title">Λεπτομέρειες Υπόθεσης</h3>
+                    <button class="modal-close" id="modal-close">×</button>
+                </div>
+                <div class="modal-body" id="modal-body">
+                    <!-- Case details will be inserted here -->
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="btn-edit-case">✏️ Επεξεργασία</button>
+                    <button class="btn btn-danger" id="btn-delete-case">🗑️ Διαγραφή</button>
+                    <button class="btn btn-secondary" id="btn-email-text">📧 Κείμενο Email</button>
+                    <button class="btn btn-primary" id="btn-print-docs">🖨️ Εκτύπωση</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Email Text Modal -->
+        <div class="email-modal" id="email-modal">
+            <div class="email-modal-content">
+                <div class="email-modal-header">
+                    <h3>📧 Κείμενο για Email</h3>
+                    <button class="modal-close" id="email-modal-close">×</button>
+                </div>
+                <div class="email-modal-tabs">
+                    <button class="email-tab active" data-lang="el">🇬🇷 Πλήρες (Ελληνικά)</button>
+                    <button class="email-tab" data-lang="en">🇬🇧 Full (English)</button>
+                    <button class="email-tab" data-lang="initial-el">📋 Αρχικό (Ελληνικά)</button>
+                    <button class="email-tab" data-lang="initial-en">📋 Initial (English)</button>
+                </div>
+                <div class="email-modal-body">
+                    <textarea class="email-text-area" id="email-text-area" readonly></textarea>
+                </div>
+                <div class="email-modal-footer">
+                    <span class="copy-success" id="copy-success">✅ Αντιγράφηκε!</span>
+                    <button class="btn btn-secondary" id="btn-close-email">Κλείσιμο</button>
+                    <button class="btn btn-primary" id="btn-copy-email">📋 Αντιγραφή</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toast Notifications -->
+        <div class="toast-container" id="toast-container"></div>
+    </div>
+
+    <!-- Law Reference Modal -->
+    <div id="law-modal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header">
+                <h2 id="law-modal-title">Νομική Αναφορά</h2>
+                <button class="modal-close" onclick="closeLawModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="law-modal-body" style="max-height: 70vh; overflow-y: auto;">
+                <!-- Law content will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="law-texts.js"></script>
+    <script src="citizenship-logic.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
+
