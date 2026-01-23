@@ -2318,6 +2318,13 @@ function initModal() {
     elements.btnEditCase.addEventListener('click', editCurrentCase);
     elements.btnPrintDocs.addEventListener('click', printDocuments);
     
+    // Add new buttons for missing documents
+    document.getElementById('btn-print-missing').addEventListener('click', printMissingDocuments);
+    document.getElementById('btn-email-missing').addEventListener('click', openMissingEmailModal);
+    
+    // Initialize dropdowns
+    initDropdowns();
+    
     // Use event delegation for delete button to ensure it always works
     document.addEventListener('click', (e) => {
         if (e.target && (e.target.id === 'btn-delete-case' || e.target.closest('#btn-delete-case'))) {
@@ -2331,6 +2338,56 @@ function initModal() {
     initEmailModal();
 }
 
+function initDropdowns() {
+    // Email dropdown
+    const emailDropdownTrigger = document.getElementById('btn-email-dropdown');
+    const emailDropdownMenu = document.getElementById('email-dropdown-menu');
+    
+    // Print dropdown
+    const printDropdownTrigger = document.getElementById('btn-print-dropdown');
+    const printDropdownMenu = document.getElementById('print-dropdown-menu');
+    
+    // Toggle dropdowns
+    emailDropdownTrigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        emailDropdownTrigger.classList.toggle('active');
+        emailDropdownMenu.classList.toggle('active');
+        // Close print dropdown if open
+        printDropdownTrigger.classList.remove('active');
+        printDropdownMenu.classList.remove('active');
+    });
+    
+    printDropdownTrigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        printDropdownTrigger.classList.toggle('active');
+        printDropdownMenu.classList.toggle('active');
+        // Close email dropdown if open
+        emailDropdownTrigger.classList.remove('active');
+        emailDropdownMenu.classList.remove('active');
+    });
+    
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.dropdown-btn-container')) {
+            emailDropdownTrigger.classList.remove('active');
+            emailDropdownMenu.classList.remove('active');
+            printDropdownTrigger.classList.remove('active');
+            printDropdownMenu.classList.remove('active');
+        }
+    });
+    
+    // Close dropdown after selecting an item
+    emailDropdownMenu.addEventListener('click', () => {
+        emailDropdownTrigger.classList.remove('active');
+        emailDropdownMenu.classList.remove('active');
+    });
+    
+    printDropdownMenu.addEventListener('click', () => {
+        printDropdownTrigger.classList.remove('active');
+        printDropdownMenu.classList.remove('active');
+    });
+}
+
 let currentModalCaseId = null;
 
 function openCaseModal(caseId) {
@@ -2342,6 +2399,88 @@ function openCaseModal(caseId) {
     elements.modalTitle.textContent = `${caseObj.data.lastName} ${caseObj.data.firstName}`;
     elements.modalBody.innerHTML = renderCaseDetails(caseObj);
     elements.modal.classList.add('active');
+    
+    // Set up event listeners for document checkboxes
+    setupDocumentCheckboxListeners();
+}
+
+function setupDocumentCheckboxListeners() {
+    // Document checkboxes
+    const docCheckboxes = document.querySelectorAll('.doc-checkbox');
+    docCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', (e) => {
+            const docId = e.target.dataset.docId;
+            updateDocumentStatus(docId, e.target.checked);
+        });
+    });
+    
+    // Alternative document radio buttons
+    const altCheckboxes = document.querySelectorAll('.alt-checkbox');
+    altCheckboxes.forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            const docId = e.target.dataset.docId;
+            const altIndex = parseInt(e.target.dataset.altIndex);
+            updateDocumentAlternative(docId, altIndex);
+        });
+    });
+}
+
+function updateDocumentStatus(docId, isReceived) {
+    const caseObj = AppState.cases.find(c => c.id === currentModalCaseId);
+    if (!caseObj) return;
+    
+    if (!caseObj.documentStatus) {
+        caseObj.documentStatus = {};
+    }
+    
+    if (!caseObj.documentStatus[docId]) {
+        caseObj.documentStatus[docId] = {};
+    }
+    
+    caseObj.documentStatus[docId].received = isReceived;
+    
+    // If unchecking, also clear the alternative
+    if (!isReceived) {
+        delete caseObj.documentStatus[docId].alternativeUsed;
+    }
+    
+    saveCases();
+    
+    // Update the UI to show the status
+    const docLi = document.querySelector(`li[data-doc-id="${docId}"]`);
+    if (docLi) {
+        if (isReceived) {
+            docLi.classList.add('doc-received');
+        } else {
+            docLi.classList.remove('doc-received');
+        }
+    }
+}
+
+function updateDocumentAlternative(docId, altIndex) {
+    const caseObj = AppState.cases.find(c => c.id === currentModalCaseId);
+    if (!caseObj) return;
+    
+    if (!caseObj.documentStatus) {
+        caseObj.documentStatus = {};
+    }
+    
+    if (!caseObj.documentStatus[docId]) {
+        caseObj.documentStatus[docId] = {};
+    }
+    
+    caseObj.documentStatus[docId].alternativeUsed = altIndex;
+    
+    // Automatically check the main checkbox if an alternative is selected
+    if (!caseObj.documentStatus[docId].received) {
+        caseObj.documentStatus[docId].received = true;
+        const mainCheckbox = document.querySelector(`.doc-checkbox[data-doc-id="${docId}"]`);
+        if (mainCheckbox) {
+            mainCheckbox.checked = true;
+        }
+    }
+    
+    saveCases();
 }
 
 function closeModal() {
@@ -2357,8 +2496,9 @@ function renderCaseDetails(caseObj) {
     
     let documentsHtml = '';
     if (category) {
-        // Pass case data for conditional documents (divorce, etc.)
-        documentsHtml = window.CitizenshipLogic.formatDocumentsList(category.id, true, data);
+        // Pass case data for conditional documents (divorce, etc.) and document status
+        const documentStatus = caseObj.documentStatus || {};
+        documentsHtml = window.CitizenshipLogic.formatDocumentsList(category.id, true, data, documentStatus);
     }
     
     // Banner για ειδικές περιπτώσεις στο modal
@@ -2792,9 +2932,305 @@ function printDocuments() {
     }, 1000);
 }
 
+function printMissingDocuments() {
+    const caseObj = AppState.cases.find(c => c.id === currentModalCaseId);
+    if (!caseObj) return;
+    
+    const category = caseObj.allCategories && caseObj.allCategories[0] ? 
+        caseObj.allCategories[0].category : null;
+    
+    // Hide all received documents
+    const allDocLis = document.querySelectorAll('.documents-list li[data-doc-id]');
+    allDocLis.forEach(li => {
+        const docId = li.dataset.docId;
+        const docStatus = caseObj.documentStatus?.[docId];
+        if (docStatus?.received) {
+            li.style.display = 'none';
+        }
+    });
+    
+    // Create print header
+    const printHeader = document.createElement('div');
+    printHeader.className = 'print-header';
+    printHeader.innerHTML = `
+        <h1>🏛️ Ελλιπή Δικαιολογητικά - Ελληνική Ιθαγένεια</h1>
+        <div class="print-subtitle">${caseObj.data.lastName} ${caseObj.data.firstName}</div>
+        <div class="print-subtitle">${category ? category.name : ''}</div>
+        <div class="print-date">Ημερομηνία εκτύπωσης: ${new Date().toLocaleDateString('el-GR')}</div>
+    `;
+    
+    // Create print footer
+    const printFooter = document.createElement('div');
+    printFooter.className = 'print-footer';
+    printFooter.innerHTML = `
+        Βάσει του Ν. 3284/2004 (Κώδικας Ελληνικής Ιθαγένειας) | 
+        Σημείωση: Τα αλλοδαπά έγγραφα απαιτούν επίσημη μετάφραση, επικύρωση και Apostille
+    `;
+    
+    // Insert header at top of modal body
+    const modalBody = elements.modalBody;
+    modalBody.insertBefore(printHeader, modalBody.firstChild);
+    modalBody.appendChild(printFooter);
+    
+    // Open all details elements for printing
+    const detailsElements = modalBody.querySelectorAll('details');
+    detailsElements.forEach(d => d.setAttribute('open', ''));
+    
+    window.print();
+    
+    // Clean up after print
+    setTimeout(() => {
+        printHeader.remove();
+        printFooter.remove();
+        // Restore hidden documents
+        allDocLis.forEach(li => {
+            li.style.display = '';
+        });
+    }, 1000);
+}
+
+function openMissingEmailModal() {
+    currentEmailCaseId = currentModalCaseId;
+    currentEmailLang = 'el';
+    isShowingMissingOnly = true;
+    
+    // Reset tabs
+    document.querySelectorAll('.email-tab').forEach(t => t.classList.remove('active'));
+    document.querySelector('.email-tab[data-lang="el"]').classList.add('active');
+    
+    updateMissingEmailText();
+    document.getElementById('email-modal').classList.add('active');
+}
+
+function updateMissingEmailText() {
+    const caseObj = AppState.cases.find(c => c.id === currentEmailCaseId);
+    if (!caseObj) return;
+    
+    let text = '';
+    switch (currentEmailLang) {
+        case 'el':
+            text = generateGreekMissingEmailText(caseObj);
+            break;
+        case 'en':
+            text = generateEnglishMissingEmailText(caseObj);
+            break;
+        case 'initial-el':
+            text = generateInitialGreekEmail(caseObj);
+            break;
+        case 'initial-en':
+            text = generateInitialEnglishEmail(caseObj);
+            break;
+        default:
+            text = generateGreekMissingEmailText(caseObj);
+    }
+    
+    document.getElementById('email-text-area').value = text;
+}
+
+function generateGreekMissingEmailText(caseObj) {
+    const data = caseObj.data;
+    const category = caseObj.allCategories && caseObj.allCategories[0] ? 
+        caseObj.allCategories[0].category : null;
+    
+    if (!category) return 'Δεν βρέθηκε κατηγορία ιθαγένειας.';
+    
+    const docs = window.CitizenshipLogic.getRequiredDocuments(category.id);
+    const sortedDocs = sortDocumentsByImportance(docs);
+    const documentStatus = caseObj.documentStatus || {};
+    
+    // Filter only missing documents
+    const missingDocs = {};
+    for (const [section, documents] of Object.entries(sortedDocs)) {
+        const missing = documents.filter(doc => !documentStatus[doc.id]?.received);
+        if (missing.length > 0) {
+            missingDocs[section] = missing;
+        }
+    }
+    
+    let text = `ΑΙΤΗΣΗ ΕΛΛΗΝΙΚΗΣ ΙΘΑΓΕΝΕΙΑΣ - ΕΛΛΙΠΟΝΤΑ ΔΙΚΑΙΟΛΟΓΗΤΙΚΑ
+═══════════════════════════════════════════════════════════
+
+ΣΤΟΙΧΕΙΑ ΑΙΤΟΥΝΤΟΣ:
+• Ονοματεπώνυμο: ${data.lastName || ''} ${data.firstName || ''}
+• Ημ. Γέννησης: ${data.birthDate ? new Date(data.birthDate).toLocaleDateString('el-GR') : '-'}
+
+ΚΑΤΗΓΟΡΙΑ ΙΘΑΓΕΝΕΙΑΣ:
+${category.name}
+
+═══════════════════════════════════════════════════════════
+ΕΛΛΙΠΟΝΤΑ ΔΙΚΑΙΟΛΟΓΗΤΙΚΑ (κατά σειρά προτεραιότητας)
+═══════════════════════════════════════════════════════════
+
+`;
+
+    const sectionLabels = {
+        applicant: 'Α. ΕΓΓΡΑΦΑ ΑΙΤΟΥΝΤΟΣ',
+        parent: 'Β. ΕΓΓΡΑΦΑ ΓΟΝΕΑ/ΓΟΝΕΩΝ',
+        spouse: 'Γ. ΕΓΓΡΑΦΑ ΣΥΖΥΓΟΥ',
+        children: 'Δ. ΕΓΓΡΑΦΑ ΤΕΚΝΩΝ',
+        ancestry: 'Ε. ΕΓΓΡΑΦΑ ΚΑΤΑΓΩΓΗΣ',
+        general: 'ΣΤ. ΓΕΝΙΚΑ ΕΓΓΡΑΦΑ'
+    };
+    
+    let docNumber = 1;
+    let hasMissing = false;
+    
+    for (const [section, documents] of Object.entries(missingDocs)) {
+        if (documents.length === 0) continue;
+        hasMissing = true;
+        
+        text += `\n${sectionLabels[section] || section}\n`;
+        text += '─'.repeat(50) + '\n\n';
+        
+        for (const doc of documents) {
+            const requiredMark = doc.required ? '[ΥΠΟΧΡΕΩΤΙΚΟ]' : '[ΠΡΟΑΙΡΕΤΙΚΟ]';
+            const foreignMark = doc.foreignDoc ? ' ⚠️ ΑΛΛΟΔΑΠΟ' : '';
+            
+            text += `${docNumber}. ${doc.name} ${requiredMark}${foreignMark}\n`;
+            
+            if (doc.alternatives && doc.alternatives.length > 0) {
+                text += `   Εναλλακτικά (αν δεν είναι διαθέσιμο):\n`;
+                doc.alternatives.forEach((alt, i) => {
+                    text += `      ${i + 1}) ${alt}\n`;
+                });
+            }
+            text += '\n';
+            docNumber++;
+        }
+    }
+    
+    if (!hasMissing) {
+        text += '\n✅ Όλα τα απαιτούμενα δικαιολογητικά έχουν παραληφθεί!\n\n';
+    }
+    
+    text += `
+═══════════════════════════════════════════════════════════
+ΣΗΜΑΝΤΙΚΕΣ ΟΔΗΓΙΕΣ
+═══════════════════════════════════════════════════════════
+
+⚠️ ΑΛΛΟΔΑΠΑ ΕΓΓΡΑΦΑ:
+Όλα τα έγγραφα που εκδίδονται από αλλοδαπές αρχές πρέπει να:
+1. Είναι επίσημα μεταφρασμένα στην ελληνική γλώσσα
+2. Φέρουν επικύρωση (notarization) από αρμόδια αρχή
+3. Φέρουν σφραγίδα Apostille (Σύμβαση Χάγης 1961)
+
+Παρακαλούμε αποστείλετε τα ελλιπόντα δικαιολογητικά το συντομότερο δυνατό.
+
+Ευχαριστούμε,
+[Υπογραφή]
+
+───────────────────────────────────────────────────────────
+Ημερομηνία: ${new Date().toLocaleDateString('el-GR')}
+Αρ. Υπόθεσης: ${caseObj.id}
+`;
+
+    return text;
+}
+
+function generateEnglishMissingEmailText(caseObj) {
+    const data = caseObj.data;
+    const category = caseObj.allCategories && caseObj.allCategories[0] ? 
+        caseObj.allCategories[0].category : null;
+    
+    if (!category) return 'Citizenship category not found.';
+    
+    const docs = window.CitizenshipLogic.getRequiredDocuments(category.id);
+    const sortedDocs = sortDocumentsByImportance(docs);
+    const documentStatus = caseObj.documentStatus || {};
+    
+    // Filter only missing documents
+    const missingDocs = {};
+    for (const [section, documents] of Object.entries(sortedDocs)) {
+        const missing = documents.filter(doc => !documentStatus[doc.id]?.received);
+        if (missing.length > 0) {
+            missingDocs[section] = missing;
+        }
+    }
+    
+    let text = `GREEK CITIZENSHIP APPLICATION - MISSING DOCUMENTS
+═══════════════════════════════════════════════════════════
+
+APPLICANT INFORMATION:
+• Full Name: ${data.lastName || ''} ${data.firstName || ''}
+• Date of Birth: ${data.birthDate ? new Date(data.birthDate).toLocaleDateString('en-US') : '-'}
+
+CITIZENSHIP CATEGORY:
+${category.name}
+
+═══════════════════════════════════════════════════════════
+MISSING DOCUMENTS (in order of priority)
+═══════════════════════════════════════════════════════════
+
+`;
+
+    const sectionLabels = {
+        applicant: 'A. APPLICANT DOCUMENTS',
+        parent: 'B. PARENT DOCUMENTS',
+        spouse: 'C. SPOUSE DOCUMENTS',
+        children: 'D. CHILDREN DOCUMENTS',
+        ancestry: 'E. ANCESTRY DOCUMENTS',
+        general: 'F. GENERAL DOCUMENTS'
+    };
+    
+    let docNumber = 1;
+    let hasMissing = false;
+    
+    for (const [section, documents] of Object.entries(missingDocs)) {
+        if (documents.length === 0) continue;
+        hasMissing = true;
+        
+        text += `\n${sectionLabels[section] || section}\n`;
+        text += '─'.repeat(50) + '\n\n';
+        
+        for (const doc of documents) {
+            const requiredMark = doc.required ? '[REQUIRED]' : '[OPTIONAL]';
+            const foreignMark = doc.foreignDoc ? ' ⚠️ FOREIGN' : '';
+            
+            text += `${docNumber}. ${doc.name} ${requiredMark}${foreignMark}\n`;
+            
+            if (doc.alternatives && doc.alternatives.length > 0) {
+                text += `   Alternatives (if not available):\n`;
+                doc.alternatives.forEach((alt, i) => {
+                    text += `      ${i + 1}) ${alt}\n`;
+                });
+            }
+            text += '\n';
+            docNumber++;
+        }
+    }
+    
+    if (!hasMissing) {
+        text += '\n✅ All required documents have been received!\n\n';
+    }
+    
+    text += `
+═══════════════════════════════════════════════════════════
+IMPORTANT INSTRUCTIONS
+═══════════════════════════════════════════════════════════
+
+⚠️ FOREIGN DOCUMENTS:
+All documents issued by foreign authorities must:
+1. Be officially translated into Greek
+2. Be notarized by the competent authority
+3. Bear an Apostille stamp (Hague Convention 1961)
+
+Please send the missing documents as soon as possible.
+
+Thank you,
+[Signature]
+
+───────────────────────────────────────────────────────────
+Date: ${new Date().toLocaleDateString('en-US')}
+Case Reference: ${caseObj.id}
+`;
+
+    return text;
+}
+
 // Email Text Generation
 let currentEmailLang = 'el';
 let currentEmailCaseId = null;
+let isShowingMissingOnly = false;
 
 function initEmailModal() {
     const emailModal = document.getElementById('email-modal');
@@ -2818,7 +3254,11 @@ function initEmailModal() {
             emailTabs.forEach(t => t.classList.remove('active'));
             tab.classList.add('active');
             currentEmailLang = tab.dataset.lang;
-            updateEmailText();
+            if (isShowingMissingOnly) {
+                updateMissingEmailText();
+            } else {
+                updateEmailText();
+            }
         });
     });
 }
@@ -2826,6 +3266,7 @@ function initEmailModal() {
 function openEmailModal() {
     currentEmailCaseId = currentModalCaseId;
     currentEmailLang = 'el';
+    isShowingMissingOnly = false;
     
     // Reset tabs
     document.querySelectorAll('.email-tab').forEach(t => t.classList.remove('active'));

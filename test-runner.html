@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Citizenship Logic - Test Runner</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 2rem;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1a4480 0%, #0d2b52 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            opacity: 0.9;
+        }
+
+        .controls {
+            padding: 1.5rem 2rem;
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #1a4480;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0d2b52;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(26, 68, 128, 0.3);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #1a4480;
+            border: 2px solid #1a4480;
+        }
+
+        .btn-secondary:hover {
+            background: #f8f9fa;
+        }
+
+        .status {
+            margin-left: auto;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+        }
+
+        .status-passed { color: #28a745; }
+        .status-failed { color: #dc3545; }
+        .status-total { color: #6c757d; }
+
+        .results {
+            padding: 2rem;
+        }
+
+        .test-suite {
+            margin-bottom: 2rem;
+        }
+
+        .suite-header {
+            background: #f8f9fa;
+            padding: 1rem 1.5rem;
+            border-left: 4px solid #1a4480;
+            margin-bottom: 1rem;
+            border-radius: 4px;
+        }
+
+        .suite-name {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1a4480;
+        }
+
+        .suite-stats {
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-top: 0.25rem;
+        }
+
+        .test-item {
+            padding: 0.75rem 1.5rem;
+            border-left: 3px solid transparent;
+            margin-bottom: 0.5rem;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .test-item.pass {
+            background: rgba(40, 167, 69, 0.1);
+            border-left-color: #28a745;
+        }
+
+        .test-item.fail {
+            background: rgba(220, 53, 69, 0.1);
+            border-left-color: #dc3545;
+        }
+
+        .test-icon {
+            font-size: 1.25rem;
+        }
+
+        .test-description {
+            flex: 1;
+            font-weight: 500;
+        }
+
+        .test-error {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            padding: 0.75rem;
+            margin-top: 0.5rem;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            color: #856404;
+        }
+
+        .overall-stats {
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            padding: 2rem;
+            border-radius: 8px;
+            margin-top: 2rem;
+            text-align: center;
+        }
+
+        .overall-stats.has-failures {
+            background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+        }
+
+        .overall-stats h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1rem;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: #6c757d;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #1a4480;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        #console-output {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 1.5rem;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            max-height: 400px;
+            overflow-y: auto;
+            line-height: 1.6;
+            margin-top: 2rem;
+        }
+
+        #console-output:empty {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏛️ Citizenship Logic Test Suite</h1>
+            <p>Comprehensive validation of Greek citizenship determination logic</p>
+        </div>
+
+        <div class="controls">
+            <button class="btn btn-primary" id="run-tests" onclick="runTests()">
+                ▶️ Run All Tests
+            </button>
+            <button class="btn btn-secondary" id="clear-results" onclick="clearResults()">
+                🗑️ Clear Results
+            </button>
+            <div class="status" id="status">
+                <div class="status-item status-total">
+                    <span>Total:</span>
+                    <span id="total-count">0</span>
+                </div>
+                <div class="status-item status-passed">
+                    <span>✅ Passed:</span>
+                    <span id="passed-count">0</span>
+                </div>
+                <div class="status-item status-failed">
+                    <span>❌ Failed:</span>
+                    <span id="failed-count">0</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="results" id="results">
+            <div class="loading" id="initial-message">
+                <p>Click "Run All Tests" to start testing</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load dependencies -->
+    <!-- Law texts -->
+    <script src="law-texts.js"></script>
+    
+    <!-- Modular Citizenship Logic (loaded in order) -->
+    <script src="js/modules/citizenship-categories.js"></script>
+    <script src="js/modules/citizenship-documents.js"></script>
+    <script src="js/modules/citizenship-core.js"></script>
+    <script src="js/modules/citizenship-ui.js"></script>
+    <script src="js/modules/citizenship-logic-loader.js"></script>
+    
+    <!-- Test suite -->
+    <script src="js/tests/citizenship-tests.js"></script>
+
+    <script>
+        async function runTests() {
+            const resultsDiv = document.getElementById('results');
+            const runButton = document.getElementById('run-tests');
+            
+            // Clear previous results
+            resultsDiv.innerHTML = '<div class="loading"><div class="spinner"></div><p>Running tests...</p></div>';
+            runButton.disabled = true;
+            
+            // Capture console output
+            const consoleOutput = [];
+            const originalLog = console.log;
+            const originalError = console.error;
+            
+            console.log = (...args) => {
+                consoleOutput.push(args.join(' '));
+                originalLog(...args);
+            };
+            
+            console.error = (...args) => {
+                consoleOutput.push('ERROR: ' + args.join(' '));
+                originalError(...args);
+            };
+            
+            try {
+                // Run tests
+                const results = await window.CitizenshipTests.runAllTests();
+                
+                // Restore console
+                console.log = originalLog;
+                console.error = originalError;
+                
+                // Display results
+                displayResults(results);
+                
+            } catch (error) {
+                console.error = originalError;
+                console.log = originalLog;
+                
+                resultsDiv.innerHTML = `
+                    <div class="test-item fail">
+                        <span class="test-icon">❌</span>
+                        <div class="test-description">
+                            <strong>Test Suite Error</strong>
+                            <div class="test-error">${error.message}\n${error.stack}</div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            runButton.disabled = false;
+        }
+        
+        function displayResults(overallResults) {
+            const resultsDiv = document.getElementById('results');
+            
+            // Update status counts
+            document.getElementById('total-count').textContent = overallResults.total;
+            document.getElementById('passed-count').textContent = overallResults.passed;
+            document.getElementById('failed-count').textContent = overallResults.failed;
+            
+            // Build results HTML
+            let html = '';
+            
+            const suites = [
+                window.CitizenshipTests.categoryTests,
+                window.CitizenshipTests.documentTests,
+                window.CitizenshipTests.ancestryTests,
+                window.CitizenshipTests.uiTests,
+                window.CitizenshipTests.edgeCaseTests,
+                window.CitizenshipTests.costTests
+            ];
+            
+            for (const suite of suites) {
+                const suitePassed = suite.results.filter(r => r.status === 'PASS').length;
+                const suiteFailed = suite.results.filter(r => r.status === 'FAIL').length;
+                
+                html += `
+                    <div class="test-suite">
+                        <div class="suite-header">
+                            <div class="suite-name">${suite.name}</div>
+                            <div class="suite-stats">
+                                ${suitePassed} passed, ${suiteFailed} failed, ${suite.results.length} total
+                            </div>
+                        </div>
+                `;
+                
+                for (const result of suite.results) {
+                    const statusClass = result.status === 'PASS' ? 'pass' : 'fail';
+                    const icon = result.status === 'PASS' ? '✅' : '❌';
+                    
+                    html += `
+                        <div class="test-item ${statusClass}">
+                            <span class="test-icon">${icon}</span>
+                            <div class="test-description">
+                                ${result.description}
+                                ${result.error ? `<div class="test-error">${result.error}</div>` : ''}
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                html += '</div>';
+            }
+            
+            // Overall stats
+            const hasFailures = overallResults.failed > 0;
+            html += `
+                <div class="overall-stats ${hasFailures ? 'has-failures' : ''}">
+                    <h2>${hasFailures ? '⚠️ Some Tests Failed' : '🎉 All Tests Passed!'}</h2>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value">${overallResults.total}</div>
+                            <div class="stat-label">Total Tests</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" style="color: #28a745;">${overallResults.passed}</div>
+                            <div class="stat-label">Passed</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" style="color: #dc3545;">${overallResults.failed}</div>
+                            <div class="stat-label">Failed</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">${overallResults.successRate.toFixed(1)}%</div>
+                            <div class="stat-label">Success Rate</div>
+                        </div>
+                    </div>
+                    ${hasFailures ? '' : '<p style="margin-top: 1rem; font-weight: 600;">✨ The codebase is ready for refactoring!</p>'}
+                </div>
+            `;
+            
+            resultsDiv.innerHTML = html;
+        }
+        
+        function clearResults() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<div class="loading" id="initial-message"><p>Click "Run All Tests" to start testing</p></div>';
+            
+            document.getElementById('total-count').textContent = '0';
+            document.getElementById('passed-count').textContent = '0';
+            document.getElementById('failed-count').textContent = '0';
+        }
+    </script>
+</body>
+</html>
+

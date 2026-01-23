@@ -214,8 +214,28 @@
                 <div class="modal-footer">
                     <button class="btn btn-secondary" id="btn-edit-case">✏️ Επεξεργασία</button>
                     <button class="btn btn-danger" id="btn-delete-case">🗑️ Διαγραφή</button>
-                    <button class="btn btn-secondary" id="btn-email-text">📧 Κείμενο Email</button>
-                    <button class="btn btn-primary" id="btn-print-docs">🖨️ Εκτύπωση</button>
+                    
+                    <div class="dropdown-btn-container">
+                        <button class="btn btn-secondary dropdown-trigger" id="btn-email-dropdown">
+                            📧 Email
+                            <span class="dropdown-arrow">▼</span>
+                        </button>
+                        <div class="dropdown-menu" id="email-dropdown-menu">
+                            <button class="dropdown-item" id="btn-email-text">📋 Πλήρης Λίστα</button>
+                            <button class="dropdown-item" id="btn-email-missing">⚠️ Μόνο Ελλιπή</button>
+                        </div>
+                    </div>
+                    
+                    <div class="dropdown-btn-container">
+                        <button class="btn btn-primary dropdown-trigger" id="btn-print-dropdown">
+                            🖨️ Εκτύπωση
+                            <span class="dropdown-arrow">▼</span>
+                        </button>
+                        <div class="dropdown-menu" id="print-dropdown-menu">
+                            <button class="dropdown-item" id="btn-print-docs">📋 Πλήρης Λίστα</button>
+                            <button class="dropdown-item" id="btn-print-missing">⚠️ Μόνο Ελλιπή</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -261,8 +281,17 @@
         </div>
     </div>
 
+    <!-- Law texts -->
     <script src="law-texts.js"></script>
-    <script src="citizenship-logic.js"></script>
+    
+    <!-- Modular Citizenship Logic (loaded in order) -->
+    <script src="js/modules/citizenship-categories.js"></script>
+    <script src="js/modules/citizenship-documents.js"></script>
+    <script src="js/modules/citizenship-core.js"></script>
+    <script src="js/modules/citizenship-ui.js"></script>
+    <script src="js/modules/citizenship-logic-loader.js"></script>
+    
+    <!-- Main application -->
     <script src="app.js"></script>
 </body>
 </html>

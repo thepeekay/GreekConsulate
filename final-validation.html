@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Final Validation</title>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #1a1a1a; color: #0f0; }
+        .pass { color: #0f0; }
+        .fail { color: #f00; }
+        pre { background: #000; padding: 10px; border: 1px solid #0f0; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Final Module Validation</h1>
+    <div id="results"></div>
+
+    <script src="law-texts.js"></script>
+    <script src="js/modules/citizenship-categories.js"></script>
+    <script src="js/modules/citizenship-documents.js"></script>
+    <script src="js/modules/citizenship-core.js"></script>
+    <script src="js/modules/citizenship-ui.js"></script>
+    <script src="js/modules/citizenship-logic-loader.js"></script>
+    <script src="js/tests/citizenship-tests.js"></script>
+    
+    <script>
+        const results = document.getElementById('results');
+        
+        // The tests should have run automatically
+        setTimeout(() => {
+            results.innerHTML = '<h2>Tests should have executed above. Scroll up to see results.</h2>';
+            results.innerHTML += '<p>If you see "28 tests passed" then everything is working!</p>';
+            
+            // Try calling a function
+            try {
+                const testResult = window.CitizenshipLogic.determineCitizenshipCategory({
+                    fatherIsGreek: true,
+                    birthDate: '1990-01-01'
+                });
+                results.innerHTML += '<p class="pass">✅ Manual test: Got ' + testResult.length + ' results</p>';
+            } catch (e) {
+                results.innerHTML += '<p class="fail">❌ Manual test failed: ' + e.message + '</p>';
+            }
+        }, 1000);
+    </script>
+</body>
+</html>
+

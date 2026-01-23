@@ -1888,3 +1888,120 @@ details li::marker {
     color: white;
 }
 
+/* Document checkbox styles */
+.doc-checkbox-container {
+    flex-shrink: 0;
+}
+
+.doc-checkbox {
+    accent-color: var(--success-color);
+    margin: 0;
+}
+
+.documents-list li.doc-received {
+    background: rgba(46, 125, 50, 0.08) !important;
+    border-left: 3px solid var(--success-color);
+}
+
+.alt-checkbox {
+    accent-color: var(--primary-color);
+}
+
+/* Modal footer responsive layout */
+@media (max-width: 768px) {
+    .modal-footer {
+        flex-wrap: wrap;
+        gap: 0.5rem !important;
+    }
+    
+    .modal-footer .btn {
+        flex: 1 1 calc(50% - 0.25rem);
+        min-width: 120px;
+        font-size: 0.85rem;
+        padding: 0.625rem 0.875rem;
+    }
+    
+    .dropdown-btn-container {
+        flex: 1 1 calc(50% - 0.25rem);
+        min-width: 120px;
+    }
+}
+
+/* Dropdown button styles */
+.dropdown-btn-container {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-trigger {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+}
+
+.dropdown-arrow {
+    font-size: 0.7rem;
+    margin-left: auto;
+    transition: transform 0.3s ease;
+}
+
+.dropdown-trigger.active .dropdown-arrow {
+    transform: rotate(180deg);
+}
+
+.dropdown-menu {
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    right: 0;
+    background: var(--bg-secondary);
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-lg);
+    margin-bottom: 0.5rem;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: all 0.3s ease;
+    z-index: 1000;
+    overflow: hidden;
+}
+
+.dropdown-menu.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: none;
+    background: transparent;
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 500;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.dropdown-item:last-child {
+    border-bottom: none;
+}
+
+.dropdown-item:hover {
+    background: var(--bg-primary);
+    color: var(--primary-color);
+}
+
+.dropdown-item:active {
+    background: rgba(26, 68, 128, 0.1);
+}
+
