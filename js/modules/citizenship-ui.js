@@ -85,7 +85,7 @@ function formatDocumentsList(categoryId, showAlternatives = false, caseData = nu
         for (const doc of documents) {
             const docStatus = documentStatus[doc.id] || {};
             const isChecked = docStatus.received || false;
-            const alternativeUsed = docStatus.alternativeUsed || null;
+            const alternativeUsed = docStatus.alternativeUsed !== undefined ? docStatus.alternativeUsed : null;
             const statusClass = doc.required ? 'pending' : '';
             const statusText = doc.required ? 'Υποχρεωτικό' : 'Προαιρετικό';
             const foreignBadge = doc.foreignDoc ? '<span style="background: var(--warning-color); color: white; font-size: 0.7rem; padding: 0.1rem 0.4rem; border-radius: 3px; margin-left: 0.5rem;">Αλλοδαπό</span>' : '';
@@ -124,7 +124,7 @@ function formatDocumentsList(categoryId, showAlternatives = false, caseData = nu
                             ${doc.alternatives.map((alt, idx) => `
                                 <li style="margin-bottom: 0.5rem; display: flex; align-items: start; gap: 0.5rem;">
                                     <label style="display: flex; align-items: center; cursor: pointer; gap: 0.5rem; flex: 1;">
-                                        <input type="radio" name="alt-${doc.id}" value="${idx}" class="alt-checkbox" data-doc-id="${doc.id}" data-alt-index="${idx}" ${Number(alternativeUsed) === idx ? 'checked' : ''} style="cursor: pointer;">
+                                        <input type="radio" name="alt-${doc.id}" value="${idx}" class="alt-checkbox" data-doc-id="${doc.id}" data-alt-index="${idx}" ${alternativeUsed !== null && alternativeUsed !== undefined && Number(alternativeUsed) === idx ? 'checked' : ''} style="cursor: pointer;">
                                         <span style="color: var(--text-secondary);">${alt}</span>
                                     </label>
                                 </li>
@@ -354,7 +354,7 @@ function formatDocumentsList(categoryId, showAlternatives = false, caseData = nu
 function formatSingleDocument(doc, documentStatus = {}) {
     const docStatus = documentStatus[doc.id] || {};
     const isChecked = docStatus.received || false;
-    const alternativeUsed = docStatus.alternativeUsed || null;
+    const alternativeUsed = docStatus.alternativeUsed !== undefined ? docStatus.alternativeUsed : null;
     const foreignBadge = doc.foreignDoc ? '<span style="background: var(--warning-color); color: white; font-size: 0.7rem; padding: 0.1rem 0.4rem; border-radius: 3px; margin-left: 0.5rem;">Αλλοδαπό</span>' : '';
     const statusText = doc.required ? 'Υποχρεωτικό' : 'Προαιρετικό';
     const statusClass = doc.required ? 'pending' : '';
@@ -393,7 +393,7 @@ function formatSingleDocument(doc, documentStatus = {}) {
                     ${doc.alternatives.map((alt, idx) => `
                         <li style="margin-bottom: 0.5rem; display: flex; align-items: start; gap: 0.5rem;">
                             <label style="display: flex; align-items: center; cursor: pointer; gap: 0.5rem; flex: 1;">
-                                <input type="radio" name="alt-${doc.id}" value="${idx}" class="alt-checkbox" data-doc-id="${doc.id}" data-alt-index="${idx}" ${Number(alternativeUsed) === idx ? 'checked' : ''} style="cursor: pointer;">
+                                <input type="radio" name="alt-${doc.id}" value="${idx}" class="alt-checkbox" data-doc-id="${doc.id}" data-alt-index="${idx}" ${alternativeUsed !== null && alternativeUsed !== undefined && Number(alternativeUsed) === idx ? 'checked' : ''} style="cursor: pointer;">
                                 <span style="color: var(--text-secondary);">${alt}</span>
                             </label>
                         </li>

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head><title>Test Check</title></head>
+<body>
+    <h1>Loading Tests...</h1>
+    <div id="status"></div>
+    
+    <script src="law-texts.js"></script>
+    <script src="js/modules/citizenship-categories.js"></script>
+    <script src="js/modules/citizenship-documents.js"></script>
+    <script src="js/modules/citizenship-core.js"></script>
+    <script src="js/modules/citizenship-ui.js"></script>
+    <script src="js/modules/citizenship-logic-loader.js"></script>
+    <script src="js/tests/citizenship-tests.js"></script>
+    
+    <script>
+        const status = document.getElementById('status');
+        
+        setTimeout(() => {
+            if (typeof window.CitizenshipTests !== 'undefined') {
+                status.innerHTML = '<h2 style="color:green">✓ Tests loaded successfully!</h2>';
+                status.innerHTML += '<p>Available: ' + Object.keys(window.CitizenshipTests).join(', ') + '</p>';
+                
+                // Try to run tests
+                window.CitizenshipTests.runAllTests().then(results => {
+                    status.innerHTML += '<h3>Tests completed!</h3>';
+                    status.innerHTML += '<p>Total: ' + results.total + '</p>';
+                    status.innerHTML += '<p>Passed: ' + results.passed + '</p>';
+                    status.innerHTML += '<p>Failed: ' + results.failed + '</p>';
+                }).catch(err => {
+                    status.innerHTML += '<h3 style="color:red">Error running tests:</h3>';
+                    status.innerHTML += '<pre>' + err.message + '</pre>';
+                });
+            } else {
+                status.innerHTML = '<h2 style="color:red">✗ Tests NOT loaded</h2>';
+                status.innerHTML += '<p>window.CitizenshipTests is: ' + typeof window.CitizenshipTests + '</p>';
+                status.innerHTML += '<p>window.CitizenshipLogic is: ' + typeof window.CitizenshipLogic + '</p>';
+            }
+        }, 1000);
+    </script>
+</body>
+</html>

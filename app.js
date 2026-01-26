@@ -1132,6 +1132,42 @@ function renderResidenceStep() {
             </div>
         </div>
         
+        <div class="form-group">
+            <label class="form-label">Πού διαμένετε μόνιμα;</label>
+            <div class="option-cards" data-name="residesAbroad">
+                <label class="option-card" data-value="false">
+                    <input type="radio" name="residesAbroad" value="false">
+                    <div class="option-card-content">
+                        <span class="option-icon">🇬🇷</span>
+                        <div class="option-text">
+                            <h4>Στην Ελλάδα</h4>
+                            <p>Μόνιμη διαμονή στην Ελλάδα</p>
+                        </div>
+                    </div>
+                    <span class="option-checkmark">✓</span>
+                </label>
+                <label class="option-card" data-value="true">
+                    <input type="radio" name="residesAbroad" value="true">
+                    <div class="option-card-content">
+                        <span class="option-icon">🌍</span>
+                        <div class="option-text">
+                            <h4>Στο Εξωτερικό</h4>
+                            <p>Μόνιμη διαμονή εκτός Ελλάδας (Άρθρο 10)</p>
+                        </div>
+                    </div>
+                    <span class="option-checkmark">✓</span>
+                </label>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label">Χώρα Μόνιμης Διαμονής</label>
+                <input type="text" class="form-input" name="countryOfResidence" placeholder="π.χ. ΗΠΑ, Γερμανία, Καναδάς">
+                <p style="font-size: 0.8rem; color: var(--text-light); margin-top: 0.25rem;">Για Άρθρο 10 (ομογενείς εξωτερικού)</p>
+            </div>
+        </div>
+        
         <div class="form-row">
             <div class="form-group">
                 <label class="form-label">Έτη Νόμιμης Διαμονής στην Ελλάδα</label>
@@ -1336,6 +1372,72 @@ function renderSpecialStep() {
                     <span class="option-checkmark">✓</span>
                 </label>
             </div>
+        </div>
+        
+        <hr style="margin: 2rem 0; border: none; border-top: 2px solid var(--border-color);">
+        
+        <h3 style="margin-bottom: 1rem; color: var(--primary-color);">🇪🇺 Ευρωπαϊκή Ένωση & Ειδικές Κατηγορίες</h3>
+        
+        <div class="form-group">
+            <label class="form-label">Είστε πολίτης κράτους-μέλους της ΕΕ;</label>
+            <div class="option-cards small" data-name="isEUCitizen">
+                <label class="option-card" data-value="true">
+                    <input type="radio" name="isEUCitizen" value="true">
+                    <div class="option-card-content">
+                        <div class="option-text">
+                            <h4>Ναι</h4>
+                            <p>Πολίτης ΕΕ (μειωμένος χρόνος 3 ετών)</p>
+                        </div>
+                    </div>
+                    <span class="option-checkmark">✓</span>
+                </label>
+                <label class="option-card" data-value="false">
+                    <input type="radio" name="isEUCitizen" value="false">
+                    <div class="option-card-content">
+                        <div class="option-text"><h4>Όχι</h4></div>
+                    </div>
+                    <span class="option-checkmark">✓</span>
+                </label>
+            </div>
+        </div>
+        
+        <hr style="margin: 2rem 0; border: none; border-top: 2px solid var(--border-color);">
+        
+        <h3 style="margin-bottom: 1rem; color: var(--primary-color);">👨‍👩‍👧‍👦 Πολιτογράφηση Γονέα (Άρθρο 11)</h3>
+        
+        <div class="form-group">
+            <label class="form-label">Έχει πολιτογραφηθεί κάποιος γονέας σας πρόσφατα;</label>
+            <div class="option-cards small" data-name="parentRecentlyNaturalized">
+                <label class="option-card" data-value="true">
+                    <input type="radio" name="parentRecentlyNaturalized" value="true">
+                    <div class="option-card-content">
+                        <div class="option-text">
+                            <h4>Ναι</h4>
+                            <p>Γονέας έχει πολιτογραφηθεί</p>
+                        </div>
+                    </div>
+                    <span class="option-checkmark">✓</span>
+                </label>
+                <label class="option-card" data-value="false">
+                    <input type="radio" name="parentRecentlyNaturalized" value="false">
+                    <div class="option-card-content">
+                        <div class="option-text"><h4>Όχι</h4></div>
+                    </div>
+                    <span class="option-checkmark">✓</span>
+                </label>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Οικογενειακή Κατάσταση</label>
+            <select class="form-select" name="maritalStatus">
+                <option value="">-- Επιλέξτε --</option>
+                <option value="unmarried">Άγαμος/η</option>
+                <option value="married">Έγγαμος/η</option>
+                <option value="divorced">Διαζευγμένος/η</option>
+                <option value="widowed">Χήρος/α</option>
+            </select>
+            <p style="font-size: 0.8rem; color: var(--text-light); margin-top: 0.25rem;">Για Άρθρο 11 (τέκνα πολιτογραφούμενου)</p>
         </div>
         
         <div class="form-group">
@@ -1938,6 +2040,12 @@ function prepareDataForAnalysis(sourceData = null) {
     data.isRefugee = data.isRefugeeOrStateless === 'refugee';
     data.isStateless = data.isRefugeeOrStateless === 'stateless';
     
+    // NEW: Article 10 and other new categories
+    data.residesAbroad = data.residesAbroad === 'true' || data.residesAbroad === true;
+    data.isEUCitizen = data.isEUCitizen === 'true' || data.isEUCitizen === true;
+    data.parentRecentlyNaturalized = data.parentRecentlyNaturalized === 'true' || data.parentRecentlyNaturalized === true;
+    data.parentNaturalizationPending = data.parentNaturalizationPending === 'true' || data.parentNaturalizationPending === true;
+    
     // Number conversions
     data.residenceYearsInGreece = parseInt(data.residenceYearsInGreece) || 0;
     data.schoolYearsInGreece = parseInt(data.schoolYearsInGreece) || 0;
@@ -1988,6 +2096,16 @@ function initOptionCards() {
             const input = card.querySelector('input');
             if (input) {
                 input.checked = true;
+                
+                // Trigger onchange event manually to handle conditional field visibility
+                // This fixes the bug where death fields don't appear until page refresh
+                if (input.onchange) {
+                    input.onchange();
+                } else {
+                    // Fallback: dispatch change event
+                    const event = new Event('change', { bubbles: true });
+                    input.dispatchEvent(event);
+                }
             }
             
             // Save to state

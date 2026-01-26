@@ -528,6 +528,64 @@ function determineCitizenshipCategory(data) {
         });
     }
     
+    // Έλεγχος 10A: Πολιτογράφηση ομογενών στο εξωτερικό (Άρθρο 10)
+    // ΚΡΙΣΙΜΟ: Μόνο για όσους διαμένουν ΜΟΝΙΜΑ στο εξωτερικό
+    if (data.residesAbroad && hasGreekAncestry(data) && !hasGreekParent(data)) {
+        results.push({
+            category: CitizenshipCategories.NATURALIZATION_EXPATRIATE,
+            confidence: 'high',
+            reason: 'Ομογενής που διαμένει μόνιμα στο εξωτερικό - Άρθρο 10',
+            chainAnalysis: chainAnalysis,
+            note: 'Απαιτείται συνέντευξη και έκθεση από προξενική αρχή'
+        });
+    }
+    
+    // Έλεγχος 10B: Τέκνα πολιτογραφούμενου γονέα (Άρθρο 11)
+    if (data.parentRecentlyNaturalized || data.parentNaturalizationPending) {
+        const isMinor = birthDate && ((new Date() - birthDate) / (1000 * 60 * 60 * 24 * 365)) < 18;
+        const isUnmarried = data.maritalStatus === 'unmarried' || !data.maritalStatus;
+        
+        if (isMinor || isUnmarried) {
+            results.push({
+                category: CitizenshipCategories.NATURALIZATION_CHILDREN,
+                confidence: 'high',
+                reason: isMinor ? 
+                    'Ανήλικο τέκνο πολιτογραφούμενου γονέα - Αυτόματη κτήση' :
+                    'Άγαμο ενήλικο τέκνο - Δήλωση εντός 3 ετών από πολιτογράφηση γονέα',
+                chainAnalysis: chainAnalysis,
+                note: isMinor ? 
+                    'Αυτόματη πολιτογράφηση με τον γονέα' :
+                    'Απαιτείται δήλωση εντός 3 ετών'
+            });
+        }
+    }
+    
+    // Έλεγχος 10C: Πολίτης ΕΕ (Άρθρο 5 παρ. 2ε) - 3ετής διαμονή
+    if (data.isEUCitizen && data.residenceYearsInGreece >= 3 && !hasGreekParent(data)) {
+        results.push({
+            category: CitizenshipCategories.NATURALIZATION_EU_CITIZEN,
+            confidence: 'high',
+            reason: 'Πολίτης ΕΕ με 3ετή νόμιμη διαμονή στην Ελλάδα',
+            chainAnalysis: chainAnalysis,
+            note: 'Μειωμένος χρόνος διαμονής για πολίτες ΕΕ'
+        });
+    }
+    
+    // Έλεγχος 10D: Απόφοιτος ελληνικού πανεπιστημίου (Άρθρο 5 παρ. 2στ) - 3ετής διαμονή
+    if (data.graduatedGreekUniversity && data.residenceYearsInGreece >= 3 && !hasGreekParent(data)) {
+        // This is a DIFFERENT route than DECLARATION_UNIVERSITY
+        // DECLARATION_UNIVERSITY = Article 14 (declaration route)
+        // NATURALIZATION_UNIVERSITY_GRAD = Article 5 (naturalization with reduced time)
+        // Both routes can be valid, so we should show both options
+        results.push({
+            category: CitizenshipCategories.NATURALIZATION_UNIVERSITY_GRAD,
+            confidence: 'high',
+            reason: 'Απόφοιτος ελληνικού ΑΕΙ/ΤΕΙ με 3ετή διαμονή - Πολιτογράφηση',
+            chainAnalysis: chainAnalysis,
+            note: 'Μειωμένος χρόνος διαμονής και εξαίρεση από ελληνομάθεια'
+        });
+    }
+    
     // Έλεγχος 11: Γενική πολιτογράφηση (7 έτη)
     if (data.residenceYearsInGreece >= 7) {
         results.push({
@@ -556,10 +614,16 @@ function determineCitizenshipCategory(data) {
             'BIRTH_GREEK_MOTHER_PRE1984': 3,
             'RECOGNITION': 4,
             'ADOPTION': 5,
-            'NATURALIZATION_OMOGENEIS': 6,
-            'NATURALIZATION_SPOUSE': 7,
-            'DECLARATION_BIRTH_SCHOOLING': 8,
-            'DECLARATION_SCHOOLING': 9
+            'NATURALIZATION_CHILDREN': 6,
+            'NATURALIZATION_EXPATRIATE': 7,
+            'NATURALIZATION_OMOGENEIS': 8,
+            'NATURALIZATION_EU_CITIZEN': 9,
+            'NATURALIZATION_UNIVERSITY_GRAD': 10,
+            'NATURALIZATION_SPOUSE': 11,
+            'DECLARATION_BIRTH_SCHOOLING': 12,
+            'DECLARATION_SCHOOLING': 13,
+            'NATURALIZATION_GENERAL': 14,
+            'REACQUISITION': 15
         };
         return (priority[a.category.id.toUpperCase()] || 99) - (priority[b.category.id.toUpperCase()] || 99);
     });

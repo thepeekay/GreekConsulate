@@ -1224,6 +1224,426 @@ const RequiredDocuments = {
             }
         ]
     },
+    // Article 10 - Naturalization of Expatriates Abroad
+    NATURALIZATION_EXPATRIATE: {
+        applicant: [
+            { 
+                id: 'birth_cert', 
+                name: 'Πιστοποιητικό γέννησης (μεταφρασμένο & επικυρωμένο)', 
+                required: true,
+                legalRef: 'Άρθρο 10 Ν. 3284/2004',
+                foreignDoc: true,
+                alternatives: [
+                    'Ληξιαρχική πράξη γέννησης από χώρα διαμονής',
+                    'Πιστοποιητικό βάπτισης με πλήρη στοιχεία'
+                ]
+            },
+            { 
+                id: 'passport', 
+                name: 'Διαβατήριο σε ισχύ', 
+                required: true,
+                legalRef: 'Άρθρο 6 & 10 Ν. 3284/2004',
+                foreignDoc: true,
+                alternatives: [
+                    'Ταυτότητα χώρας διαμονής'
+                ]
+            },
+            { 
+                id: 'photo', 
+                name: 'Φωτογραφίες (3 τεμ.)', 
+                required: true,
+                legalRef: 'Διοικητική απαίτηση',
+                foreignDoc: false,
+                alternatives: []
+            },
+            { 
+                id: 'criminal_record', 
+                name: 'Ποινικό μητρώο (χώρας διαμονής)', 
+                required: true,
+                legalRef: 'Άρθρο 10 παρ. 1(δ) Ν. 3284/2004',
+                foreignDoc: true,
+                alternatives: [
+                    'Πιστοποιητικό μη καταδίκης από αστυνομία',
+                    'FBI Background Check (ΗΠΑ)',
+                    'Police Certificate από χώρα διαμονής'
+                ]
+            },
+            { 
+                id: 'residence_proof', 
+                name: 'Αποδεικτικά μόνιμης διαμονής στο εξωτερικό', 
+                required: true,
+                legalRef: 'Άρθρο 10 παρ. 1 Ν. 3284/2004',
+                foreignDoc: true,
+                alternatives: [
+                    'Βεβαίωση διεύθυνσης κατοικίας',
+                    'Λογαριασμοί ΔΕΚΟ στο όνομα αιτούντος',
+                    'Μισθωτήριο ή τίτλος ιδιοκτησίας',
+                    'Φορολογική δήλωση χώρας διαμονής'
+                ]
+            }
+        ],
+        ancestry_proof: [
+            { 
+                id: 'greek_ancestor_birth', 
+                name: 'Πιστοποιητικό γέννησης Έλληνα προγόνου', 
+                required: true,
+                legalRef: 'Άρθρο 10 παρ. 1(β) - Απόδειξη αδιάψευστης εθνικής καταγωγής',
+                foreignDoc: false,
+                alternatives: [
+                    'Ληξιαρχική πράξη γέννησης από ελληνικό ληξιαρχείο',
+                    'Απόσπασμα Μητρώου Αρρένων (για άρρενες προγόνους)',
+                    'Βαπτιστικό από ελληνική ορθόδοξη εκκλησία',
+                    'Αντίγραφο από Γενικά Αρχεία του Κράτους (ΓΑΚ)',
+                    'Πιστοποιητικό από παλαιά Δημοτολόγια'
+                ]
+            },
+            { 
+                id: 'greek_ancestor_citizenship', 
+                name: 'Αποδεικτικό ελληνικής ιθαγένειας προγόνου', 
+                required: true,
+                legalRef: 'Άρθρο 10 παρ. 1(β) Ν. 3284/2004',
+                foreignDoc: false,
+                alternatives: [
+                    'Πιστοποιητικό εγγραφής σε Δημοτολόγιο',
+                    'Πιστοποιητικό Μητρώου Αρρένων',
+                    'Παλαιό ελληνικό διαβατήριο',
+                    'Στρατολογικά έγγραφα (πιστοποιητικό Α\' ή Β\' κατηγορίας)',
+                    'Πιστοποιητικό εκλογικών καταλόγων',
+                    'Έγγραφα από Οθωμανικά Αρχεία (για περιόδους πριν 1922)'
+                ]
+            },
+            { 
+                id: 'lineage_chain', 
+                name: 'Έγγραφα αλυσίδας καταγωγής (γενεαλογικό δέντρο)', 
+                required: true,
+                legalRef: 'Άρθρο 10 Ν. 3284/2004 - Τεκμηρίωση σχέσης',
+                foreignDoc: true,
+                alternatives: [
+                    'Πιστοποιητικά γέννησης κάθε γενιάς στη σειρά',
+                    'Ληξιαρχικές πράξεις γάμου γονέων/παππούδων',
+                    'Πιστοποιητικά οικογενειακής κατάστασης',
+                    'Βαπτιστικά που αναφέρουν γονείς',
+                    'Πιστοποιητικά θανάτου (για αποβιώσαντες)',
+                    'Ένορκες βεβαιώσεις συγγενών για ελλείποντα έγγραφα'
+                ]
+            }
+        ],
+        consular_documents: [
+            { 
+                id: 'consular_report', 
+                name: 'Έκθεση προξενικής αρχής περί εθνικής συνείδησης', 
+                required: true,
+                legalRef: 'Άρθρο 10 παρ. 1(γ) & παρ. 3 Ν. 3284/2004',
+                foreignDoc: false,
+                alternatives: [],
+                note: 'Συντάσσεται από το Προξενείο μετά από συνέντευξη'
+            },
+            { 
+                id: 'consular_interview', 
+                name: 'Προγραμματισμός συνέντευξης στο Προξενείο', 
+                required: true,
+                legalRef: 'Άρθρο 10 παρ. 3 Ν. 3284/2004',
+                foreignDoc: false,
+                alternatives: [],
+                note: 'Υποχρεωτική συνέντευξη για διαπίστωση ελληνικής εθνικής συνείδησης'
+            },
+            { 
+                id: 'national_consciousness_proof', 
+                name: 'Αποδεικτικά ελληνικής εθνικής συνείδησης', 
+                required: false,
+                legalRef: 'Άρθρο 10 παρ. 1(γ) Ν. 3284/2004',
+                foreignDoc: true,
+                alternatives: [
+                    'Συμμετοχή σε ελληνικούς συλλόγους/οργανισμούς',
+                    'Παρακολούθηση ελληνικών σχολείων στο εξωτερικό',
+                    'Γνώση ελληνικής γλώσσας',
+                    'Επισκέψεις στην Ελλάδα',
+                    'Οικογενειακοί δεσμοί με Ελλάδα',
+                    'Συμμετοχή σε ελληνικές κοινότητες'
+                ]
+            }
+        ],
+        general: [
+            { 
+                id: 'application_form', 
+                name: 'Αίτηση πολιτογράφησης (έντυπο προξενείου)', 
+                required: true,
+                legalRef: 'Άρθρο 10 παρ. 2 Ν. 3284/2004',
+                foreignDoc: false,
+                alternatives: []
+            },
+            { 
+                id: 'fee_receipt', 
+                name: 'Παράβολο πολιτογράφησης (700€)', 
+                required: true,
+                legalRef: 'Άρθρο 13 Ν. 3284/2004',
+                foreignDoc: false,
+                alternatives: [
+                    'Αποδεικτικό κατάθεσης σε λογαριασμό Προξενείου',
+                    'Money Order/Bank Check προς το Προξενείο'
+                ]
+            },
+            { 
+                id: 'submission_letter', 
+                name: 'Συνοδευτική επιστολή εξήγησης κινήτρων', 
+                required: false,
+                legalRef: 'Βοηθητικό έγγραφο',
+                foreignDoc: false,
+                alternatives: [],
+                note: 'Προαιρετικό αλλά συνιστάται - εξήγηση λόγων επιθυμίας απόκτησης ελληνικής ιθαγένειας'
+            }
+        ]
+    },
+    // Article 11 - Children of Naturalized Parent
+    NATURALIZATION_CHILDREN: {
+        applicant: [
+            { 
+                id: 'birth_cert', 
+                name: 'Πιστοποιητικό γέννησης τέκνου', 
+                required: true,
+                legalRef: 'Άρθρο 11 Ν. 3284/2004',
+                foreignDoc: true,
+                alternatives: []
+            },
+            { 
+                id: 'passport', 
+                name: 'Διαβατήριο/Ταυτότητα τέκνου', 
+                required: true,
+                legalRef: 'Άρθρο 6 Ν. 3284/2004',
+                foreignDoc: true,
+                alternatives: []
+            },
+            { 
+                id: 'marital_status', 
+                name: 'Πιστοποιητικό οικογενειακής κατάστασης (για ενήλικα)', 
+                required: false,
+                legalRef: 'Άρθρο 11 παρ. 2 - Απόδειξη μη έγγαμης κατάστασης',
+                foreignDoc: true,
+                alternatives: [
+                    'Υπεύθυνη δήλωση μη έγγαμης κατάστασης'
+                ]
+            }
+        ],
+        parent: [
+            { 
+                id: 'parent_naturalization', 
+                name: 'Απόφαση πολιτογράφησης γονέα', 
+                required: true,
+                legalRef: 'Άρθρο 11 Ν. 3284/2004',
+                foreignDoc: false,
+                alternatives: [
+                    'Πιστοποιητικό ιθαγένειας γονέα',
+                    'ΦΕΚ δημοσίευσης πολιτογράφησης'
+                ]
+            },
+            { 
+                id: 'family_proof', 
+                name: 'Απόδειξη συγγένειας με πολιτογραφούμενο γονέα', 
+                required: true,
+                legalRef: 'Άρθρο 11 Ν. 3284/2004',
+                foreignDoc: true,
+                alternatives: [
+                    'Πιστοποιητικό γέννησης τέκνου που αναφέρει γονείς',
+                    'Πιστοποιητικό οικογενειακής κατάστασης γονέα'
+                ]
+            }
+        ],
+        residence: [
+            { 
+                id: 'residence_proof_greece', 
+                name: 'Απόδειξη μόνιμης διαμονής στην Ελλάδα (για ανήλικα)', 
+                required: true,
+                legalRef: 'Άρθρο 11 παρ. 1 Ν. 3284/2004',
+                foreignDoc: false,
+                alternatives: [
+                    'Βεβαίωση κατοικίας από Δήμο',
+                    'Άδεια διαμονής',
+                    'Σχολική εγγραφή'
+                ]
+            }
+        ],
+        general: [
+            { 
+                id: 'declaration_form', 
+                name: 'Δήλωση απόκτησης ιθαγένειας (για ενήλικα)', 
+                required: false,
+                legalRef: 'Άρθρο 11 παρ. 2 - Εντός 3 ετών από πολιτογράφηση γονέα',
+                foreignDoc: false,
+                alternatives: []
+            }
+        ]
+    },
+    // EU Citizen Naturalization
+    NATURALIZATION_EU_CITIZEN: {
+        applicant: [
+            { 
+                id: 'birth_cert', 
+                name: 'Πιστοποιητικό γέννησης', 
+                required: true,
+                legalRef: 'Άρθρο 5 παρ. 2(ε) Ν. 3284/2004',
+                foreignDoc: true,
+                alternatives: []
+            },
+            { 
+                id: 'eu_passport', 
+                name: 'Διαβατήριο ΕΕ', 
+                required: true,
+                legalRef: 'Άρθρο 5 & 6 Ν. 3284/2004',
+                foreignDoc: true,
+                alternatives: [
+                    'Ταυτότητα κράτους-μέλους ΕΕ'
+                ]
+            },
+            { 
+                id: 'photo', 
+                name: 'Φωτογραφίες (3 τεμ.)', 
+                required: true,
+                legalRef: 'Διοικητική απαίτηση',
+                foreignDoc: false,
+                alternatives: []
+            },
+            { 
+                id: 'criminal_record', 
+                name: 'Ποινικό μητρώο', 
+                required: true,
+                legalRef: 'Άρθρο 5 παρ. 1β Ν. 3284/2004',
+                foreignDoc: true,
+                alternatives: []
+            },
+            { 
+                id: 'residence_permit', 
+                name: 'Βεβαίωση διαμονής (3+ έτη)', 
+                required: true,
+                legalRef: 'Άρθρο 5 παρ. 2(ε) Ν. 3284/2004',
+                foreignDoc: false,
+                alternatives: [
+                    'Βεβαιώσεις εγγραφής σε δημοτολόγιο',
+                    'Άδεια διαμονής ΕΕ',
+                    'Αποδεικτικά φορολογικής κατοικίας'
+                ]
+            }
+        ],
+        general: [
+            { 
+                id: 'application_form', 
+                name: 'Αίτηση πολιτογράφησης', 
+                required: true,
+                legalRef: 'Άρθρο 6 Ν. 3284/2004',
+                foreignDoc: false,
+                alternatives: []
+            },
+            { 
+                id: 'language_cert', 
+                name: 'Πιστοποιητικό ελληνομάθειας (Β1)', 
+                required: true,
+                legalRef: 'Άρθρο 5α Ν. 3284/2004',
+                foreignDoc: false,
+                alternatives: [
+                    'Απολυτήριο ελληνικού σχολείου',
+                    'Πτυχίο ελληνικού ΑΕΙ/ΤΕΙ'
+                ]
+            },
+            { 
+                id: 'history_cert', 
+                name: 'Πιστοποιητικό γνώσης ιστορίας/πολιτισμού', 
+                required: true,
+                legalRef: 'Άρθρο 5α παρ. 2 Ν. 3284/2004',
+                foreignDoc: false,
+                alternatives: []
+            },
+            { 
+                id: 'fee_receipt', 
+                name: 'Παράβολο (550€)', 
+                required: true,
+                legalRef: 'Άρθρο 13 Ν. 3284/2004',
+                foreignDoc: false,
+                alternatives: []
+            }
+        ]
+    },
+    // University Graduate Naturalization
+    NATURALIZATION_UNIVERSITY_GRAD: {
+        applicant: [
+            { 
+                id: 'birth_cert', 
+                name: 'Πιστοποιητικό γέννησης', 
+                required: true,
+                legalRef: 'Άρθρο 5 παρ. 2(στ) Ν. 3284/2004',
+                foreignDoc: true,
+                alternatives: []
+            },
+            { 
+                id: 'passport', 
+                name: 'Διαβατήριο', 
+                required: true,
+                legalRef: 'Άρθρο 6 Ν. 3284/2004',
+                foreignDoc: true,
+                alternatives: []
+            },
+            { 
+                id: 'photo', 
+                name: 'Φωτογραφίες (3 τεμ.)', 
+                required: true,
+                legalRef: 'Διοικητική απαίτηση',
+                foreignDoc: false,
+                alternatives: []
+            },
+            { 
+                id: 'university_degree', 
+                name: 'Πτυχίο ελληνικού ΑΕΙ/ΤΕΙ', 
+                required: true,
+                legalRef: 'Άρθρο 5 παρ. 2(στ) Ν. 3284/2004',
+                foreignDoc: false,
+                alternatives: [
+                    'Βεβαίωση αποφοίτησης από ελληνικό Πανεπιστήμιο',
+                    'Πιστοποιητικό ολοκλήρωσης σπουδών'
+                ]
+            },
+            { 
+                id: 'criminal_record', 
+                name: 'Ποινικό μητρώο', 
+                required: true,
+                legalRef: 'Άρθρο 5 παρ. 1β Ν. 3284/2004',
+                foreignDoc: true,
+                alternatives: []
+            },
+            { 
+                id: 'residence_permit', 
+                name: 'Άδεια διαμονής (3+ έτη)', 
+                required: true,
+                legalRef: 'Άρθρο 5 παρ. 2(στ) Ν. 3284/2004',
+                foreignDoc: false,
+                alternatives: []
+            }
+        ],
+        general: [
+            { 
+                id: 'application_form', 
+                name: 'Αίτηση πολιτογράφησης', 
+                required: true,
+                legalRef: 'Άρθρο 6 Ν. 3284/2004',
+                foreignDoc: false,
+                alternatives: []
+            },
+            { 
+                id: 'history_cert', 
+                name: 'Πιστοποιητικό γνώσης ιστορίας/πολιτισμού', 
+                required: true,
+                legalRef: 'Άρθρο 5α παρ. 2 Ν. 3284/2004',
+                foreignDoc: false,
+                alternatives: [],
+                note: 'Εξαιρούνται από ελληνομάθεια λόγω πτυχίου ελληνικού ΑΕΙ'
+            },
+            { 
+                id: 'fee_receipt', 
+                name: 'Παράβολο (550€)', 
+                required: true,
+                legalRef: 'Άρθρο 13 Ν. 3284/2004',
+                foreignDoc: false,
+                alternatives: []
+            }
+        ]
+    },
     REACQUISITION: {
         applicant: [
             { 

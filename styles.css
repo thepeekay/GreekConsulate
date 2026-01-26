@@ -1041,11 +1041,33 @@ body {
     background: var(--bg-secondary);
     border-radius: var(--radius-lg);
     width: 90%;
-    max-width: 800px;
+    max-width: 1200px; /* Increased from 800px */
     max-height: 90vh;
     overflow: hidden;
     transform: scale(0.9);
     transition: var(--transition);
+}
+
+/* Responsive modal sizing */
+@media (min-width: 768px) {
+    .modal-content {
+        width: 85%;
+        max-width: 900px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .modal-content {
+        width: 80%;
+        max-width: 1100px;
+    }
+}
+
+@media (min-width: 1440px) {
+    .modal-content {
+        width: 75%;
+        max-width: 1200px;
+    }
 }
 
 .modal.active .modal-content {
