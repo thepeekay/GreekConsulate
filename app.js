@@ -11,6 +11,185 @@ const AppState = {
     editingCaseId: null
 };
 
+// Document Status Manager - Single source of truth for document status
+const DocumentStatusManager = {
+    /**
+     * Get the current context: 'new-wizard', 'edit-wizard', or 'modal'
+     */
+    getContext() {
+        if (currentModalCaseId) {
+            return 'modal';
+        } else if (AppState.editingCaseId) {
+            return 'edit-wizard';
+        } else {
+            return 'new-wizard';
+        }
+    },
+    
+    /**
+     * Get the document status object for the current context
+     * Returns the documentStatus object (or creates one if needed)
+     */
+    getStatus() {
+        const context = this.getContext();
+        
+        if (context === 'modal') {
+            const caseObj = AppState.cases.find(c => c.id === currentModalCaseId);
+            if (!caseObj) return null;
+            if (!caseObj.documentStatus) {
+                caseObj.documentStatus = {};
+            }
+            return caseObj.documentStatus;
+        } else if (context === 'edit-wizard') {
+            const caseObj = AppState.cases.find(c => c.id === AppState.editingCaseId);
+            if (!caseObj) return null;
+            if (!caseObj.documentStatus) {
+                caseObj.documentStatus = {};
+            }
+            // ALSO sync to AppState.caseData for wizard display
+            if (!AppState.caseData.documentStatus) {
+                AppState.caseData.documentStatus = {};
+            }
+            return caseObj.documentStatus;
+        } else {
+            // new-wizard: Store in AppState.caseData
+            if (!AppState.caseData.documentStatus) {
+                AppState.caseData.documentStatus = {};
+            }
+            return AppState.caseData.documentStatus;
+        }
+    },
+    
+    /**
+     * Get the case object for saving (handles all contexts)
+     */
+    getCaseObject() {
+        const context = this.getContext();
+        
+        if (context === 'modal') {
+            return AppState.cases.find(c => c.id === currentModalCaseId);
+        } else if (context === 'edit-wizard') {
+            return AppState.cases.find(c => c.id === AppState.editingCaseId);
+        } else {
+            return null; // No case object yet in new-wizard
+        }
+    },
+    
+    /**
+     * Update checkbox status
+     */
+    updateCheckbox(docId, isReceived) {
+        const docStatus = this.getStatus();
+        if (!docStatus) return;
+        
+        if (!docStatus[docId]) {
+            docStatus[docId] = {};
+        }
+        
+        docStatus[docId].received = isReceived;
+        
+        // If unchecking, also clear the alternative
+        if (!isReceived) {
+            delete docStatus[docId].alternativeUsed;
+        }
+        
+        this.save();
+        this.refreshUI(docId);
+    },
+    
+    /**
+     * Update alternative selection
+     */
+    updateAlternative(docId, altIndex) {
+        const docStatus = this.getStatus();
+        if (!docStatus) return;
+        
+        if (!docStatus[docId]) {
+            docStatus[docId] = {};
+        }
+        
+        docStatus[docId].alternativeUsed = altIndex;
+        
+        // Automatically check the main checkbox
+        if (!docStatus[docId].received) {
+            docStatus[docId].received = true;
+            const mainCheckbox = document.querySelector(`.doc-checkbox[data-doc-id="${docId}"]`);
+            if (mainCheckbox) {
+                mainCheckbox.checked = true;
+            }
+        }
+        
+        this.save();
+        this.refreshUI(docId, true); // true = needs full refresh for clear button
+    },
+    
+    /**
+     * Clear alternative selection
+     */
+    clearAlternative(docId) {
+        const docStatus = this.getStatus();
+        if (!docStatus || !docStatus[docId]) return;
+        
+        delete docStatus[docId].alternativeUsed;
+        
+        // Uncheck all radio buttons for this document
+        const radios = document.querySelectorAll(`input[name="alt-${docId}"]`);
+        radios.forEach(radio => radio.checked = false);
+        
+        this.save();
+        this.refreshUI(docId, true); // true = needs full refresh to hide clear button
+    },
+    
+    /**
+     * Save to localStorage (only if case exists)
+     */
+    save() {
+        const context = this.getContext();
+        
+        // In new-wizard mode, documentStatus is in AppState.caseData
+        // and will be saved when the case is created
+        if (context === 'new-wizard') {
+            // Nothing to save to localStorage yet
+            return;
+        }
+        
+        // In edit-wizard or modal, save the cases array
+        saveCases();
+    },
+    
+    /**
+     * Refresh UI after changes
+     */
+    refreshUI(docId, needsFullRefresh = false) {
+        const context = this.getContext();
+        
+        if (!needsFullRefresh) {
+            // Simple UI update for checkbox visual
+            const docLi = document.querySelector(`li[data-doc-id="${docId}"]`);
+            if (docLi) {
+                const docStatus = this.getStatus();
+                if (docStatus && docStatus[docId] && docStatus[docId].received) {
+                    docLi.classList.add('doc-received');
+                } else {
+                    docLi.classList.remove('doc-received');
+                }
+            }
+        } else {
+            // Full refresh needed (for alternative selection/clear button)
+            if (context === 'modal') {
+                // IMPORTANT: Capture caseId BEFORE closeModal() clears it!
+                const caseId = currentModalCaseId;
+                loadCases(); // Reload from localStorage
+                closeModal();
+                setTimeout(() => openCaseModal(caseId), 100);
+            } else {
+                // Wizard mode - just re-render current step
+                renderStep(AppState.currentStep);
+            }
+        }
+    }
+};
+
 // Wizard Steps Configuration
 const WizardSteps = [
     {
@@ -221,6 +400,11 @@ function renderStep(stepIndex) {
     
     // Add event listeners for option cards
     initOptionCards();
+    
+    // Add event listeners for document checkboxes if on result step
+    if (step.id === 'result') {
+        setupDocumentCheckboxListeners();
+    }
 }
 
 function renderPersonalStep() {
@@ -1480,7 +1664,11 @@ function renderResultStep() {
     })[0];
     
     const category = primaryResult.category;
-    const documents = window.CitizenshipLogic.formatDocumentsList(category.id, false, analysisData);
+    
+    // Get document status from DocumentStatusManager
+    const documentStatus = DocumentStatusManager.getStatus() || {};
+    
+    const documents = window.CitizenshipLogic.formatDocumentsList(category.id, true, analysisData, documentStatus);
     
     // Έλεγχος για σύσταση εναλλακτικής διαδρομής και edge cases
     let recommendationHtml = '';
@@ -2305,14 +2493,17 @@ function saveCase() {
     };
     
     if (AppState.editingCaseId) {
-        // Update existing case
+        // Update existing case - PRESERVE documentStatus!
         const index = AppState.cases.findIndex(c => c.id === AppState.editingCaseId);
         if (index !== -1) {
+            const existingDocumentStatus = AppState.cases[index].documentStatus;
+            caseObj.documentStatus = existingDocumentStatus; // Preserve document status
             AppState.cases[index] = caseObj;
         }
         showToast('Η υπόθεση ενημερώθηκε επιτυχώς!', 'success');
     } else {
-        // Add new case
+        // Add new case - transfer documentStatus from AppState.caseData (created during wizard)
+        caseObj.documentStatus = AppState.caseData.documentStatus || {};
         AppState.cases.push(caseObj);
         showToast('Η υπόθεση αποθηκεύτηκε επιτυχώς!', 'success');
     }
@@ -2541,64 +2732,31 @@ function setupDocumentCheckboxListeners() {
             updateDocumentAlternative(docId, altIndex);
         });
     });
+    
+    // Clear alternative button - using event delegation for dynamic content
+    document.addEventListener('click', handleClearAlternativeClick);
+}
+
+function handleClearAlternativeClick(e) {
+    const clearBtn = e.target.closest('.clear-alternative-btn');
+    if (clearBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        const docId = clearBtn.dataset.docId;
+        clearDocumentAlternative(docId);
+    }
 }
 
 function updateDocumentStatus(docId, isReceived) {
-    const caseObj = AppState.cases.find(c => c.id === currentModalCaseId);
-    if (!caseObj) return;
-    
-    if (!caseObj.documentStatus) {
-        caseObj.documentStatus = {};
-    }
-    
-    if (!caseObj.documentStatus[docId]) {
-        caseObj.documentStatus[docId] = {};
-    }
-    
-    caseObj.documentStatus[docId].received = isReceived;
-    
-    // If unchecking, also clear the alternative
-    if (!isReceived) {
-        delete caseObj.documentStatus[docId].alternativeUsed;
-    }
-    
-    saveCases();
-    
-    // Update the UI to show the status
-    const docLi = document.querySelector(`li[data-doc-id="${docId}"]`);
-    if (docLi) {
-        if (isReceived) {
-            docLi.classList.add('doc-received');
-        } else {
-            docLi.classList.remove('doc-received');
-        }
-    }
+    DocumentStatusManager.updateCheckbox(docId, isReceived);
 }
 
 function updateDocumentAlternative(docId, altIndex) {
-    const caseObj = AppState.cases.find(c => c.id === currentModalCaseId);
-    if (!caseObj) return;
-    
-    if (!caseObj.documentStatus) {
-        caseObj.documentStatus = {};
-    }
-    
-    if (!caseObj.documentStatus[docId]) {
-        caseObj.documentStatus[docId] = {};
-    }
-    
-    caseObj.documentStatus[docId].alternativeUsed = altIndex;
-    
-    // Automatically check the main checkbox if an alternative is selected
-    if (!caseObj.documentStatus[docId].received) {
-        caseObj.documentStatus[docId].received = true;
-        const mainCheckbox = document.querySelector(`.doc-checkbox[data-doc-id="${docId}"]`);
-        if (mainCheckbox) {
-            mainCheckbox.checked = true;
-        }
-    }
-    
-    saveCases();
+    DocumentStatusManager.updateAlternative(docId, altIndex);
+}
+
+function clearDocumentAlternative(docId) {
+    DocumentStatusManager.clearAlternative(docId);
 }
 
 function closeModal() {
@@ -2836,6 +2994,9 @@ function editCurrentCase() {
                            typeof loadedData.bornInGreece === 'boolean';
     
     AppState.caseData = needsConversion ? convertDataForForm(loadedData) : loadedData;
+    
+    // IMPORTANT: Load documentStatus into AppState.caseData for wizard display
+    AppState.caseData.documentStatus = caseObj.documentStatus || {};
     
     // Clean up derived objects - they should be recreated from flat fields
     delete AppState.caseData.ancestry;

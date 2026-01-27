@@ -84,7 +84,7 @@ function formatDocumentsList(categoryId, showAlternatives = false, caseData = nu
         
         for (const doc of documents) {
             const docStatus = documentStatus[doc.id] || {};
-            const isChecked = docStatus.received || false;
+            const isChecked = docStatus.received === true;
             const alternativeUsed = docStatus.alternativeUsed !== undefined ? docStatus.alternativeUsed : null;
             const statusClass = doc.required ? 'pending' : '';
             const statusText = doc.required ? 'Υποχρεωτικό' : 'Προαιρετικό';
@@ -102,7 +102,7 @@ function formatDocumentsList(categoryId, showAlternatives = false, caseData = nu
                                     <span style="font-weight: 500; ${isChecked ? 'text-decoration: line-through; opacity: 0.6;' : ''}">📄 ${doc.name}</span>
                                     ${foreignBadge}
                                     ${isChecked ? '<span style="background: var(--success-color); color: white; font-size: 0.7rem; padding: 0.1rem 0.4rem; border-radius: 3px; margin-left: 0.5rem;">✓ Ελήφθη</span>' : ''}
-                                    ${alternativeUsed ? `<span style="background: var(--primary-color); color: white; font-size: 0.7rem; padding: 0.1rem 0.4rem; border-radius: 3px; margin-left: 0.5rem;">🔄 Εναλλακτικό</span>` : ''}
+                                    ${alternativeUsed !== null ? `<span style="background: var(--primary-color); color: white; font-size: 0.7rem; padding: 0.1rem 0.4rem; border-radius: 3px; margin-left: 0.5rem;">🔄 Εναλλακτικό</span>` : ''}
                                 </div>
                                 <div style="font-size: 0.8rem; color: var(--text-light); margin-top: 0.25rem;">
                                     <em>Νομική βάση: <a href="#" class="law-ref-link" data-law-ref="${doc.legalRef.replace(/"/g, '&quot;')}" style="color: var(--primary-color); text-decoration: underline; cursor: pointer;">${doc.legalRef}</a></em>
@@ -120,16 +120,23 @@ function formatDocumentsList(categoryId, showAlternatives = false, caseData = nu
                         <summary style="cursor: pointer; font-size: 0.85rem; color: var(--primary-color); font-weight: 500;">
                             🔄 Εναλλακτικά έγγραφα (${doc.alternatives.length})
                         </summary>
-                        <ul style="margin-top: 0.5rem; padding-left: 0.5rem; font-size: 0.85rem; list-style: none;">
-                            ${doc.alternatives.map((alt, idx) => `
-                                <li style="margin-bottom: 0.5rem; display: flex; align-items: start; gap: 0.5rem;">
-                                    <label style="display: flex; align-items: center; cursor: pointer; gap: 0.5rem; flex: 1;">
-                                        <input type="radio" name="alt-${doc.id}" value="${idx}" class="alt-checkbox" data-doc-id="${doc.id}" data-alt-index="${idx}" ${alternativeUsed !== null && alternativeUsed !== undefined && Number(alternativeUsed) === idx ? 'checked' : ''} style="cursor: pointer;">
-                                        <span style="color: var(--text-secondary);">${alt}</span>
-                                    </label>
-                                </li>
-                            `).join('')}
-                        </ul>
+                        <div style="margin-top: 0.5rem;">
+                            <ul style="padding-left: 0.5rem; font-size: 0.85rem; list-style: none; margin: 0;">
+                                ${doc.alternatives.map((alt, idx) => `
+                                    <li style="margin-bottom: 0.5rem; display: flex; align-items: start; gap: 0.5rem;">
+                                        <label style="display: flex; align-items: center; cursor: pointer; gap: 0.5rem; flex: 1;">
+                                            <input type="radio" name="alt-${doc.id}" value="${idx}" class="alt-checkbox" data-doc-id="${doc.id}" data-alt-index="${idx}" ${alternativeUsed !== null && alternativeUsed !== undefined && alternativeUsed < doc.alternatives.length && Number(alternativeUsed) === idx ? 'checked' : ''} style="cursor: pointer;">
+                                            <span style="color: var(--text-secondary);">${alt}</span>
+                                        </label>
+                                    </li>
+                                `).join('')}
+                            </ul>
+                            ${alternativeUsed !== null && alternativeUsed !== undefined && alternativeUsed < doc.alternatives.length ? `
+                                <button class="clear-alternative-btn" data-doc-id="${doc.id}" style="margin-top: 0.5rem; padding: 0.25rem 0.75rem; font-size: 0.8rem; background: var(--error-color); color: white; border: none; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 0.35rem;">
+                                    <span>✕</span> Καθαρισμός επιλογής
+                                </button>
+                            ` : ''}
+                        </div>
                     </details>`;
             }
             
@@ -353,7 +360,7 @@ function formatDocumentsList(categoryId, showAlternatives = false, caseData = nu
 // Helper function to format a single document entry
 function formatSingleDocument(doc, documentStatus = {}) {
     const docStatus = documentStatus[doc.id] || {};
-    const isChecked = docStatus.received || false;
+    const isChecked = docStatus.received === true;
     const alternativeUsed = docStatus.alternativeUsed !== undefined ? docStatus.alternativeUsed : null;
     const foreignBadge = doc.foreignDoc ? '<span style="background: var(--warning-color); color: white; font-size: 0.7rem; padding: 0.1rem 0.4rem; border-radius: 3px; margin-left: 0.5rem;">Αλλοδαπό</span>' : '';
     const statusText = doc.required ? 'Υποχρεωτικό' : 'Προαιρετικό';
@@ -389,16 +396,23 @@ function formatSingleDocument(doc, documentStatus = {}) {
                 <summary style="cursor: pointer; font-size: 0.85rem; color: var(--primary-color); font-weight: 500;">
                     🔄 Εναλλακτικά έγγραφα (${doc.alternatives.length})
                 </summary>
-                <ul style="margin-top: 0.5rem; padding-left: 0.5rem; font-size: 0.85rem; list-style: none;">
-                    ${doc.alternatives.map((alt, idx) => `
-                        <li style="margin-bottom: 0.5rem; display: flex; align-items: start; gap: 0.5rem;">
-                            <label style="display: flex; align-items: center; cursor: pointer; gap: 0.5rem; flex: 1;">
-                                <input type="radio" name="alt-${doc.id}" value="${idx}" class="alt-checkbox" data-doc-id="${doc.id}" data-alt-index="${idx}" ${alternativeUsed !== null && alternativeUsed !== undefined && Number(alternativeUsed) === idx ? 'checked' : ''} style="cursor: pointer;">
-                                <span style="color: var(--text-secondary);">${alt}</span>
-                            </label>
-                        </li>
-                    `).join('')}
-                </ul>
+                <div style="margin-top: 0.5rem;">
+                    <ul style="padding-left: 0.5rem; font-size: 0.85rem; list-style: none; margin: 0;">
+                        ${doc.alternatives.map((alt, idx) => `
+                            <li style="margin-bottom: 0.5rem; display: flex; align-items: start; gap: 0.5rem;">
+                                <label style="display: flex; align-items: center; cursor: pointer; gap: 0.5rem; flex: 1;">
+                                    <input type="radio" name="alt-${doc.id}" value="${idx}" class="alt-checkbox" data-doc-id="${doc.id}" data-alt-index="${idx}" ${alternativeUsed !== null && alternativeUsed !== undefined && alternativeUsed < doc.alternatives.length && Number(alternativeUsed) === idx ? 'checked' : ''} style="cursor: pointer;">
+                                    <span style="color: var(--text-secondary);">${alt}</span>
+                                </label>
+                            </li>
+                        `).join('')}
+                    </ul>
+                    ${alternativeUsed !== null && alternativeUsed !== undefined && alternativeUsed < doc.alternatives.length ? `
+                        <button class="clear-alternative-btn" data-doc-id="${doc.id}" style="margin-top: 0.5rem; padding: 0.25rem 0.75rem; font-size: 0.8rem; background: var(--error-color); color: white; border: none; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 0.35rem;">
+                            <span>✕</span> Καθαρισμός επιλογής
+                        </button>
+                    ` : ''}
+                </div>
             </details>`;
     }
     

@@ -1929,6 +1929,19 @@ details li::marker {
     accent-color: var(--primary-color);
 }
 
+.clear-alternative-btn {
+    transition: opacity 0.2s ease, transform 0.1s ease;
+}
+
+.clear-alternative-btn:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+.clear-alternative-btn:active {
+    transform: translateY(0);
+}
+
 /* Modal footer responsive layout */
 @media (max-width: 768px) {
     .modal-footer {
